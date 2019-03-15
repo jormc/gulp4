@@ -1,0 +1,42 @@
+{
+  "name": "gulp4",
+  "version": "1.0.0",
+  "description": "Gulp 4 code snnipes for testing",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jormc/gulp4.git"
+  },
+  "keywords": [
+    "npm",
+    "gulp",
+    "gulp4",
+    "bootstrap",
+    "html",
+    "static",
+    "nunjucks",
+    "sass",
+    "scss"
+  ],
+  "author": "jormc",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/jormc/gulp4/issues"
+  },
+  "homepage": "https://github.com/jormc/gulp4#readme",
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-clean": "^0.4.0",
+    "through2": "^3.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "holderjs": "^2.9.6",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.7",
+    "tether": "^1.4.5"
+  }
+}
