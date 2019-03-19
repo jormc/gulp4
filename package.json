@@ -29,14 +29,19 @@
   "homepage": "https://github.com/jormc/gulp4#readme",
   "devDependencies": {
     "gulp": "^4.0.0",
+    "gulp-autoprefixer": "^6.0.0",
     "gulp-clean": "^0.4.0",
+    "gulp-flatten": "^0.4.0",
+    "gulp-sass": "^4.0.2",
     "through2": "^3.0.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.7.2",
     "bootstrap": "^4.3.1",
     "holderjs": "^2.9.6",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.7",
-    "tether": "^1.4.5"
+    "tether": "^1.4.5",
+    "weathericons": "^2.1.0"
   }
 }

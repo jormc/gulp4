@@ -3,52 +3,93 @@
 const {src, dest, series, parallel, watch} = require("gulp");
 const clean = require('gulp-clean');
 const through2 = require("through2");
+const flatten = require("gulp-flatten");
+const autoprefixer = require('gulp-autoprefixer');
+const sass = require("gulp-sass");
+
+const config = {
+
+  scripts: {
+    vendor: [
+      {
+        name: "bootstrap",
+        src: ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"],
+        active: true
+      }, {
+        name: "jquery",
+        src: ["node_modules/jquery/dist/jquery.min.js"],
+        active: true
+      }, {
+        name: "popper",
+        src: [
+          "node_modules/popper.js/dist/popper-utils.min.js",
+          "node_modules/popper.js/dist/popper.min.js"
+        ],
+        active: true
+      }, {
+        name: "tether",
+        src: ["node_modules/tether/dist/js/tether.min.js"],
+        active: true
+      }
+    ]
+  },
+  styles: {
+    vendor: [
+      {
+        name: "bootstrap",
+        src: ["node_modules/bootstrap/scss/**/*"],
+        type: "sass",
+        active: true
+      }, {
+        name: "fontawesome",
+        src: ["node_modules/@fortawesome/fontawesome-free/scss/**/*"],
+        type: "sass",
+        active: false
+      }, {
+        name: "fontawesome",
+        src: ["node_modules/@fortawesome/fontawesome-free/css/all.min.css"],
+        type: "css",
+        active: true
+      }, {
+        name: "weathericons",
+        src: ["node_modules/weathericons/sass/**/*"],
+        type: "sass",
+        active: false
+      }, {
+        name: "weathericons",
+        src: ["node_modules/weathericons/css/*.min.css"],
+        type: "css",
+        active: true
+      }
+    ]
+  }
+};
+
 
 ////////////////////////////////////////////////////////////////////////
 // TASKS
 ////////////////////////////////////////////////////////////////////////
 function cleanBuild() {
-  return src('build', {read: false, allowEmpty: true}).pipe(clean());
+  return src('build', {
+      read: false, 
+      allowEmpty: true
+    })
+    .pipe(clean());
 }
 
 function cleanVendorScripts() {
-  return src('src/scripts/vendor', {read: false, allowEmpty: true}).pipe(clean());
+  return src('src/scripts/vendor', {
+      read: false, 
+      allowEmpty: true
+    })
+    .pipe(clean());
 }
 
 function copyVendorScripts(done) {
-  const bootstrapSources = {
-    src: ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"],
-    name: "bootstrap",
-    active: true
-  };
-  const jquerySources = {
-    src: ["node_modules/jquery/dist/jquery.min.js"],
-    name: "jquery",
-    active: true
-  };
-  const popperjsSources = {
-    src: [
-      "node_modules/popper.js/dist/popper-utils.min.js",
-      "node_modules/popper.js/dist/popper.min.js"
-    ],
-    name: "popper",
-    active: true
-  };
-  const tetherSources = {
-    src: ["node_modules/tether/dist/js/tether.min.js"],
-    name: "tether",
-    active: true
-  };
 
-  var sources = [
-    bootstrapSources,
-    jquerySources,
-    popperjsSources,
-    tetherSources
-  ];
+  var sources = config.scripts.vendor.actives();
 
   var doneCounter = 0;
-
   function incDoneCounter() {
     doneCounter += 1;
     if (doneCounter >= sources.length) {
@@ -58,41 +99,90 @@ function copyVendorScripts(done) {
 
   sources.forEach(source => {
     source.src.forEach(ppp => {
-      if (source.active === true) {
-        src(ppp)
-          .pipe(dest("src/scripts/vendor/" + source.name + "/"))
-          .pipe(synchro(incDoneCounter));
-      }
+      src(ppp)
+        .pipe(dest("src/scripts/vendor/" + source.name + "/"))
+        .pipe(synchro(incDoneCounter));
     });
   });
 }
 
 function buildVendorScripts(done) {
-  done();  
-}
-
-function copyVendorStyles(done) {
-  done();
+  return src('src/scripts/vendor/**/*.js')
+    .pipe(flatten())
+    .pipe(dest('build/scripts/vendor'));
 }
 
 function cleanVendorStyles() {
-  return src('src/styles/vendor', {read: false, allowEmpty: true}).pipe(clean());
+  return src(['src/styles/vendor', 'src/sass/vendor'], {
+      read: false, 
+      allowEmpty: true
+    })
+    .pipe(clean());
 }
 
-function buildVendorStyles(done) {
-  done();  
+function copyVendorStyles(done) {
+
+  var sources = config.styles.vendor.actives();
+
+  var doneCounter = 0;
+  function incDoneCounter() {
+    doneCounter += 1;
+    if (doneCounter >= sources.length) {
+      done();
+    }
+  }
+
+  sources.forEach(source => {
+      if (source.type === "sass") {
+        source.src.forEach(ppp => {
+          src(ppp)
+            .pipe(dest("src/sass/vendor/" + source.name + "/"))
+            .pipe(synchro(incDoneCounter));
+        });
+      } else if (source.type === "css") {
+        source.src.forEach(ppp => {
+          src(ppp)
+            .pipe(dest("src/styles/vendor/" + source.name + "/"))
+            .pipe(synchro(incDoneCounter));
+        });
+      }
+  });
 }
 
-function vendorSass(done) {
-  done();
+function buildVendorStyles() {
+  return src('src/styles/vendor/**/*.css')
+    .pipe(flatten())
+    .pipe(dest('build/styles/vendor'));
 }
 
-function buildThemeScripts(done) {
-  done();
+function vendorSass() {
+  return (
+    src(["src/sass/vendor/**/*.scss"])
+    .pipe(
+      sass
+      .sync({
+        outputStyle: "expanded"
+      })
+      .on("error", sass.logError)
+    )
+    .pipe(autoprefixer())
+    //.pipe(concat("vendor.min.css"))
+    .pipe(dest("src/styles/vendor"))
+  );
 }
 
-function cleanThemeStyles(done) {
-  return src('src/styles/theme', {read: false, allowEmpty: true}).pipe(clean());
+function buildThemeScripts() {
+  return src('src/scripts/theme/*.js')
+    .pipe(flatten())
+    .pipe(dest('build/scripts/theme'));
+}
+
+function cleanThemeStyles() {
+  return src('src/styles/theme', {
+      read: false, 
+      allowEmpty: true
+    })
+    .pipe(clean());
 }
 
 function themeSass(done) {
@@ -101,6 +191,57 @@ function themeSass(done) {
 
 function buildThemeStyles(done) {
   done();  
+}
+
+function cleanVendorWebfonts() {
+  return src("src/webfonts/vendor/", {
+      read: false,
+      allowEmpty: true
+    })
+    .pipe(clean());
+}
+
+function copyVendorWebfonts(done) {
+  
+  const fontawesomeSources = {
+    src: ["node_modules/@fortawesome/fontawesome-free/webfonts/**/*"],
+    name: "fontawesome",
+    active: true
+  };
+
+  const weathericonsSources = {
+    src: ["node_modules/weathericons/font/**/*"],
+    name: "weathericons",
+    active: true
+  };
+
+  var sources = [fontawesomeSources, weathericonsSources];
+
+  var doneCounter = 0;
+  function incDoneCounter() {
+    doneCounter += 1;
+    if (doneCounter >= sources.length) {
+      done();
+    }
+  }
+
+  sources.forEach(source => {
+    if (source.active === true) {
+      source.src.forEach(ppp => {
+        src(ppp)
+          .pipe(dest("src/webfonts/vendor/" + source.name + "/"))
+          .pipe(synchro(incDoneCounter));
+      });
+    }
+  });
+}
+
+function buildVendorWebfonts() {
+  // Copy all webfonts to build/webfonts
+  // No jerarquic structure is needed, since webfonts must be in its own folder
+  return src("src/webfonts/vendor/**/*.*")
+    .pipe(flatten())
+    .pipe(dest("build/webfonts"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -121,6 +262,12 @@ function synchro(done) {
   );
 }
 
+Array.prototype.actives = function() {
+  return this.filter(function (value, index, self) {
+    return self.indexOf(value) === index && value.active === true;
+  });
+};
+
 ////////////////////////////////////////////////////////////////////////
 // COMPLEX TASKS
 ////////////////////////////////////////////////////////////////////////
@@ -129,9 +276,11 @@ const _buildVendorScripts   = series(cleanVendorScripts, copyVendorScripts, buil
 const _buildVendorStyles    = series(cleanVendorStyles, copyVendorStyles, vendorSass, buildVendorStyles);
 const _buildThemeScripts    = buildThemeScripts;
 const _buildThemeStyles     = series(cleanThemeStyles, themeSass, buildThemeStyles);
+const _buildVendorWebfonts  = series(cleanVendorWebfonts, copyVendorWebfonts, buildVendorWebfonts);
 const _scripts              = parallel(_buildVendorScripts, _buildThemeScripts);
 const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
-const _build                = series(_clean, _scripts, _styles);
+const _webfonts             = _buildVendorWebfonts;
+const _build                = series(_clean, _scripts, _styles, _webfonts);
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
