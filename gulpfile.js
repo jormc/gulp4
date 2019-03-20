@@ -6,6 +6,7 @@ const through2 = require("through2");
 const flatten = require("gulp-flatten");
 const autoprefixer = require('gulp-autoprefixer');
 const sass = require("gulp-sass");
+const browsersync = require("browser-sync").create();
 
 const config = {
 
@@ -269,6 +270,24 @@ function watchFiles() {
   watch("src/styles/vendor/**/*", buildVendorStyles);
   watch("src/styles/theme/**/*", buildThemeStyles);
   watch("src/html/**/*", buildHtml);
+  watch(["build/**/*"], browserSyncReload);
+}
+
+// BrowserSync
+function browserSync(done) {
+  browsersync.init({
+    server: {
+      baseDir: "build"
+    },
+    port: 3000
+  });
+  done();
+}
+
+// BrowserSync Reload
+function browserSyncReload(done) {
+  browsersync.reload();
+  done();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -310,7 +329,7 @@ const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
 const _html                 = buildHtml;
 const _build                = series(_clean, parallel(_scripts, _styles, _webfonts), _html);
-const _watch                = series(_build, watchFiles);
+const _watch                = series(_build, parallel(watchFiles, browserSync));
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
