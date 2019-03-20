@@ -59,7 +59,20 @@ const config = {
         name: "weathericons",
         src: ["node_modules/weathericons/css/*.min.css"],
         type: "css",
+        active: false
+      }
+    ]
+  },
+  webfonts: {
+    vendor: [
+      {
+        name: "fontawesome",
+        src: ["node_modules/@fortawesome/fontawesome-free/webfonts/**/*"],
         active: true
+      }, {
+        name: "weathericons",
+        src: ["node_modules/weathericons/font/**/*"],
+        active: false
       }
     ]
   }
@@ -186,11 +199,25 @@ function cleanThemeStyles() {
 }
 
 function themeSass(done) {
-  done();
+  return (
+    src(["src/sass/theme/**/*.scss"])
+    .pipe(
+      sass
+      .sync({
+        outputStyle: "expanded"
+      })
+      .on("error", sass.logError)
+    )
+    .pipe(autoprefixer())
+    //.pipe(concat("vendor.min.css"))
+    .pipe(dest("src/styles/theme"))
+  );
 }
 
 function buildThemeStyles(done) {
-  done();  
+  return src('src/styles/theme/**/*.css')
+    .pipe(flatten())
+    .pipe(dest('build/styles/theme')); 
 }
 
 function cleanVendorWebfonts() {
@@ -203,19 +230,7 @@ function cleanVendorWebfonts() {
 
 function copyVendorWebfonts(done) {
   
-  const fontawesomeSources = {
-    src: ["node_modules/@fortawesome/fontawesome-free/webfonts/**/*"],
-    name: "fontawesome",
-    active: true
-  };
-
-  const weathericonsSources = {
-    src: ["node_modules/weathericons/font/**/*"],
-    name: "weathericons",
-    active: true
-  };
-
-  var sources = [fontawesomeSources, weathericonsSources];
+  var sources = config.webfonts.vendor.actives();
 
   var doneCounter = 0;
   function incDoneCounter() {
@@ -244,6 +259,10 @@ function buildVendorWebfonts() {
     .pipe(dest("build/webfonts"));
 }
 
+function buildHtml() {
+  return src("src/html/**/*.*").pipe(dest("build"));
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // UTILS
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +281,7 @@ function synchro(done) {
   );
 }
 
+// Add a new array functionallity that offer us only resources maked as "active=true"
 Array.prototype.actives = function() {
   return this.filter(function (value, index, self) {
     return self.indexOf(value) === index && value.active === true;
@@ -280,7 +300,8 @@ const _buildVendorWebfonts  = series(cleanVendorWebfonts, copyVendorWebfonts, bu
 const _scripts              = parallel(_buildVendorScripts, _buildThemeScripts);
 const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
-const _build                = series(_clean, _scripts, _styles, _webfonts);
+const _html                 = buildHtml;
+const _build                = series(_clean, parallel(_scripts, _styles, _webfonts), _html);
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
