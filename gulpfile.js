@@ -263,6 +263,14 @@ function buildHtml() {
   return src("src/html/**/*.*").pipe(dest("build"));
 }
 
+function watchFiles() {
+  watch("src/scripts/vendor/**/*", buildVendorScripts);
+  watch("src/scripts/theme/**/*", buildThemeScripts);
+  watch("src/styles/vendor/**/*", buildVendorStyles);
+  watch("src/styles/theme/**/*", buildThemeStyles);
+  watch("src/html/**/*", buildHtml);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // UTILS
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -302,10 +310,12 @@ const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
 const _html                 = buildHtml;
 const _build                = series(_clean, parallel(_scripts, _styles, _webfonts), _html);
+const _watch                = series(_build, watchFiles);
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
 ////////////////////////////////////////////////////////////////////////
+exports.watch     = _watch;
 exports.build     = _build;
 exports.clean     = _clean;
 exports.default   = _build;
