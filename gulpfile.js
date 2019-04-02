@@ -264,20 +264,15 @@ function buildHtml() {
   return src("src/html/**/*.*").pipe(dest("build"));
 }
 
-function watchFiles() {
-  watch("src/scripts/vendor/**/*", buildVendorScripts);
-  watch("src/scripts/theme/**/*", buildThemeScripts);
-  watch("src/styles/vendor/**/*", buildVendorStyles);
-  watch("src/styles/theme/**/*", buildThemeStyles);
-  watch("src/html/**/*", buildHtml);
-  watch(["build/**/*"], browserSyncReload);
-}
-
 // BrowserSync
 function browserSync(done) {
   browsersync.init({
+    injectChanges: true,
     server: {
-      baseDir: "build"
+      baseDir: "./build/",
+      routes: {
+        "/device/info": "./data/info.json"
+      }
     },
     port: 3000
   });
@@ -287,6 +282,15 @@ function browserSync(done) {
 // BrowserSync Reload
 function browserSyncReload(done) {
   browsersync.reload();
+  done();
+}
+
+function watchFiles(done) {
+  watch("src/scripts/vendor/**/*", series(buildVendorScripts, browserSyncReload));
+  watch("src/scripts/theme/**/*", series(buildThemeScripts, browserSyncReload));
+  watch("src/styles/vendor/**/*", series(buildVendorStyles, browserSyncReload));
+  watch("src/styles/theme/**/*", series(buildThemeStyles, browserSyncReload));
+  watch("src/html/**/*", series(buildHtml, browserSyncReload));
   done();
 }
 
