@@ -301,7 +301,7 @@ const _scripts              = parallel(_buildVendorScripts, _buildThemeScripts);
 const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
 const _html                 = buildHtml;
-const _build                = series(parallel(_scripts, _styles, _webfonts), _html);
+const _build                = parallel(_scripts, _styles, _webfonts, _html);
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
