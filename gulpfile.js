@@ -291,7 +291,7 @@ Array.prototype.actives = function() {
 ////////////////////////////////////////////////////////////////////////
 // COMPLEX TASKS
 ////////////////////////////////////////////////////////////////////////
-const _clean                = series(cleanBuild);
+const _clean                = parallel(cleanBuild, cleanVendorScripts, cleanVendorStyles, cleanVendorWebfonts);
 const _buildVendorScripts   = series(cleanVendorScripts, copyVendorScripts, buildVendorScripts);
 const _buildVendorStyles    = series(cleanVendorStyles, copyVendorStyles, vendorSass, buildVendorStyles);
 const _buildThemeScripts    = buildThemeScripts;
@@ -301,7 +301,7 @@ const _scripts              = parallel(_buildVendorScripts, _buildThemeScripts);
 const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
 const _html                 = buildHtml;
-const _build                = series(_clean, parallel(_scripts, _styles, _webfonts), _html);
+const _build                = series(parallel(_scripts, _styles, _webfonts), _html);
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS

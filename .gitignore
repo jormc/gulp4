@@ -60,12 +60,12 @@ typings/
 # next.js build output
 .next
 
-
-#mine
-node_modules
+####################################
+# Own rules for Gulp4 project
+node_modules/
 package-lock.json
-build
-src/scripts/vendor
-src/styles/vendor
-src/sass/vendor
-src/webfonts/vendor
+build/
+src/scripts/vendor/
+src/styles/vendor/
+src/sass/vendor/
+src/webfonts/vendor/
