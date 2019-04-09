@@ -7,9 +7,10 @@ const flatten = require("gulp-flatten");
 const autoprefixer = require('gulp-autoprefixer');
 const sass = require("gulp-sass");
 const browsersync = require("browser-sync").create();
+const data = require("gulp-data");
+const nunjucksRender = require("gulp-nunjucks-render");
 
 const config = {
-
   scripts: {
     vendor: [
       {
@@ -76,9 +77,12 @@ const config = {
         active: false
       }
     ]
+  },
+  nunjucks: {
+    extensions: ['nunjucks', 'njk', 'htm', 'html'],
+    data: "/src/nunjucks/data/data.json"
   }
 };
-
 
 ////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -286,12 +290,40 @@ function browserSyncReload(done) {
 }
 
 function watchFiles(done) {
-  watch("src/scripts/vendor/**/*", series(buildVendorScripts, browserSyncReload));
-  watch("src/scripts/theme/**/*", series(buildThemeScripts, browserSyncReload));
-  watch("src/styles/vendor/**/*", series(buildVendorStyles, browserSyncReload));
-  watch("src/styles/theme/**/*", series(buildThemeStyles, browserSyncReload));
-  watch("src/html/**/*", series(buildHtml, browserSyncReload));
+  watch("src/sass/vendor/**/*",     vendorSass);
+  watch("src/sass/theme/**/*",      themeSass);
+  watch("src/scripts/vendor/**/*",  series(buildVendorScripts, browserSyncReload));
+  watch("src/scripts/theme/**/*",   series(buildThemeScripts, browserSyncReload));
+  watch("src/styles/vendor/**/*",   series(buildVendorStyles, browserSyncReload));
+  watch("src/styles/theme/**/*",    series(buildThemeStyles, browserSyncReload));
+  watch("src/html/**/*",            series(buildHtml, browserSyncReload));
+  watch("src/nunjucks/**/*",        series(nunjucks, browserSyncReload));
   done();
+}
+
+function nunjucks() {
+  // SEE: https://zellwk.com/blog/nunjucks-with-gulp/
+
+  var extensions = "(";
+  config.nunjucks.extensions.forEach(extension => {
+    if (extensions.length > 1) {
+      extensions += "|";
+    }
+    extensions += extension;
+  });
+  extensions += ")";
+
+  // Gets .html and .nunjucks files in pages
+  return src("src/nunjucks/pages/**/*.+" + extensions)
+    .pipe(data(function() {
+      return require('./src/nunjucks/data/config.json')
+    }))
+    .pipe(
+      nunjucksRender({
+        path: ["src/nunjucks/templates"]
+      })
+    )
+    .pipe(dest("build"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -332,13 +364,15 @@ const _scripts              = parallel(_buildVendorScripts, _buildThemeScripts);
 const _styles               = parallel(_buildVendorStyles, _buildThemeStyles);
 const _webfonts             = _buildVendorWebfonts;
 const _html                 = buildHtml;
-const _build                = parallel(_scripts, _styles, _webfonts, _html);
+const _nunjucks             = nunjucks;
+const _build                = parallel(_scripts, _styles, _webfonts, _html, _nunjucks);
 const _watch                = series(_build, watchFiles);
 const _serve                = series(_build, parallel(watchFiles, browserSync));
 
 ////////////////////////////////////////////////////////////////////////
 // PUBLIC TASKS
 ////////////////////////////////////////////////////////////////////////
+exports.nunjucks  = _nunjucks;
 exports.serve     = _serve;
 exports.watch     = _watch;
 exports.build     = _build;

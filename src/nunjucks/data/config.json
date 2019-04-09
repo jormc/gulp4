@@ -1,0 +1,14 @@
+{
+    "scripts": {
+        "vendor": [
+            "/scripts/vendor/bootstrap.bundle.min.js",
+            "/scripts/vendor/jquery.min.js",
+            "/scripts/vendor/popper-utils.min.js",
+            "/scripts/vendor/popper.min.js",
+            "/scripts/vendor/tether.min.js"
+        ],
+        "theme": [
+            "/scripts/theme/theme.js"
+        ]
+    }
+}

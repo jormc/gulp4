@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block header %}
+{% import 'macros/nav-macro.html' as nav %}
+{{ nav.active('info') }}
+{% endblock %}
+
+{% block content %}
+<main class="container">
+    <div class="card">
+      <div class="card-body">
+        <h4 id="device-name" class="card-title"></h4>
+        <h5>Device info</h5>
+        <dl class="row">
+          <dt class="col-sm-3">Chipid</dt>
+          <dd class="col-sm-9" id="device-chipid"></dd>
+          <dt class="col-sm-3">Total uptime</dt>
+          <dd class="col-sm-9" id="device-uptime"></dd>
+          <dt class="col-sm-3">Description</dt>
+          <dd class="col-sm-9" id="device-description"></dd>
+        </dl>
+        <hr />
+        <h5>Wifi connection</h5>
+        <dl class="row">
+          <dt class="col-sm-3">SSID</dt>
+          <dd class="col-sm-9" id="wifi-ssid"></dd>
+          <dt class="col-sm-3">Mode</dt>
+          <dd class="col-sm-9" id="wifi-mode"></dd>
+          <dt class="col-sm-3">Status</dt>
+          <dd class="col-sm-9"><span id="wifi-status" class="badge">New</span></dd>
+          <dt class="col-sm-3">IP</dt>
+          <dd class="col-sm-9" id="wifi-ip"></dd>
+          <dt class="col-sm-3">MAC</dt>
+          <dd class="col-sm-9" id="wifi-mac"></dd>
+        </dl>
+        <hr />
+        <h5>Sensors</h5>
+        <dl id="sensors-list" class="row"></dl>
+      </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock %}
+
+{% block footerScripts %}
+{% import 'macros/scripts-macro.html' as scripts %}
+{{ scripts.addScript('/scripts/info.js') }}
+{% endblock %}
